@@ -37,12 +37,13 @@ describe('actionOwner', () => {
     expect(actionOwner(state, action)).toEqual({ kind: 'team', team: 0 });
   });
 
-  it.each<GameAction>([{ type: 'revealDone' }, { type: 'timeUp' }])(
-    'never lets a phone send $type',
-    (action) => {
-      expect(actionOwner(state, action)).toBeNull();
-    },
-  );
+  it.each<GameAction>([
+    { type: 'revealDone' },
+    { type: 'timeUp' },
+    { type: 'resumeClock', pausedMs: 1 },
+  ])('never lets a phone send $type', (action) => {
+    expect(actionOwner(state, action)).toBeNull();
+  });
 });
 
 describe('canAct', () => {

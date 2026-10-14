@@ -37,6 +37,7 @@ export function actionOwner(state: GameState, action: GameAction): ActionOwner |
       return { kind: 'master' };
     case 'revealDone':
     case 'timeUp':
+    case 'resumeClock':
       return null;
     case 'proposeWord':
     case 'drawBall':

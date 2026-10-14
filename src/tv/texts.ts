@@ -49,6 +49,7 @@ export const TV_TEXTS = {
   newGameHint: 'Nouvelle partie : bouton sur le téléphone du maître.',
   gameResumed: 'Partie reprise',
   saveFailed: 'sauvegarde impossible',
+  saveUnreadable: 'sauvegarde illisible : nouvelle partie',
   storageFailed: 'code non sauvegardé',
   offline: 'TV hors ligne',
   updateController: 'un téléphone doit recharger sa page',

@@ -453,3 +453,39 @@ describe('test mode', () => {
     expect(inPhase(game.state, 'superPartie').finalist).toBe(0);
   });
 });
+
+describe('resumeClock', () => {
+  it('shifts the attempt timer by the time the TV was gone', () => {
+    const game = gameOnMaison({ attemptSeconds: 30 });
+    game.wait(20_000);
+    // The TV is reloading for one minute: that minute must not count.
+    game.wait(60_000);
+    game.act({ type: 'resumeClock', pausedMs: 60_000 });
+    game.wait(9_000);
+    expect(game.act({ type: 'timeUp' })).toEqual([]);
+    game.wait(1_000);
+    expect(eventTypes(game.act({ type: 'timeUp' }))).toContain('attemptTimedOut');
+  });
+
+  it('shifts the Super partie timer', () => {
+    const game = createTestGame({ startAtSuperPartie: true });
+    game.act({ type: 'revealDone' });
+    const before = inPhase(game.state, 'superPartie').startedAt ?? 0;
+    game.act({ type: 'resumeClock', pausedMs: 5_000 });
+    expect(inPhase(game.state, 'superPartie').startedAt).toBe(before + 5_000);
+  });
+
+  it('changes nothing when no timer is running', () => {
+    const game = createTestGame();
+    const before = game.state;
+    game.act({ type: 'resumeClock', pausedMs: 5_000 });
+    expect(game.state).toBe(before);
+  });
+
+  it.each([0, -10, Number.NaN])('ignores a pause of %d ms', (pausedMs) => {
+    const game = gameOnMaison();
+    const before = game.state;
+    game.act({ type: 'resumeClock', pausedMs });
+    expect(game.state).toBe(before);
+  });
+});

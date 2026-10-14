@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { isTestMode, parseMode } from './mode';
+import { isMuted, isTestMode, parseMode } from './mode';
 
 describe('parseMode', () => {
   it('recognizes the TV mode', () => {
@@ -27,5 +27,12 @@ describe('isTestMode', () => {
   it('is on with &test only', () => {
     expect(isTestMode('?mode=manette&code=ABCD&test')).toBe(true);
     expect(isTestMode('?mode=manette&code=ABCD')).toBe(false);
+  });
+});
+
+describe('isMuted', () => {
+  it('is on with &muet only', () => {
+    expect(isMuted('?mode=tv&muet')).toBe(true);
+    expect(isMuted('?mode=tv')).toBe(false);
   });
 });

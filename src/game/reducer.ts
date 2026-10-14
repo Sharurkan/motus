@@ -18,7 +18,7 @@ import {
   superTimeUp,
 } from './super-partie';
 import type { Ball } from './bingo';
-import type { GameAction, GameBase, GameState } from './state';
+import type { GameAction, GameBase, GameState, TurnStep } from './state';
 import { isPlainWord, normalizeText } from './text';
 import { proposeTieBreakWord, tieBreakTimeUp } from './tie-break';
 import { replaceUnplayedSecret } from './word-round';
@@ -56,6 +56,8 @@ export function reduce(state: GameState, action: GameAction, deps: GameDeps): Re
       return revealDone(state, deps);
     case 'timeUp':
       return timeUp(state, deps);
+    case 'resumeClock':
+      return resumeClock(state, action.pausedMs);
   }
 }
 
@@ -146,6 +148,19 @@ function timeUp(state: GameState, deps: GameDeps): ReduceResult {
     case 'gameOver':
       return unchanged(state);
   }
+}
+
+/** Shifts the running timers by the time the TV was reloading: that time is not counted. */
+function resumeClock(state: GameState, pausedMs: number): ReduceResult {
+  if (!Number.isFinite(pausedMs) || pausedMs <= 0) return unchanged(state);
+  if ((state.phase === 'playing' || state.phase === 'tieBreak') && state.step.kind === 'guessing') {
+    const step: TurnStep = { kind: 'guessing', startedAt: state.step.startedAt + pausedMs };
+    return { state: { ...state, step }, events: [] };
+  }
+  if (state.phase === 'superPartie' && state.startedAt !== null) {
+    return { state: { ...state, startedAt: state.startedAt + pausedMs }, events: [] };
+  }
+  return unchanged(state);
 }
 
 /** Ranking right away with the current scores. */

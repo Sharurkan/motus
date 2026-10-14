@@ -19,8 +19,12 @@ import {
 } from '../protocol/messages';
 import { toPublicView, type PhaseView } from '../protocol/view';
 import { createElement } from '../shared/dom';
+import { isMuted } from '../shared/mode';
 import { watchOnline } from '../shared/network';
+import { loadAliveAt, saveAliveAt } from '../storage/clock-store';
+import { loadGame, saveGame } from '../storage/game-store';
 import { loadRoomCode, saveRoomCode } from '../storage/room-code-store';
+import { loadRoom, saveRoom } from '../storage/room-store';
 import { mayAct, withSeatNames } from './action-guard';
 import { showBall } from './ball';
 import { formatClock, secondsLeft } from './format';
@@ -62,6 +66,8 @@ const TIMER_REFRESH_MS = 250;
 const URGENT_SECONDS = 5;
 /** Leaves a replaced phone the time to read why before its link is closed. */
 const DISMISS_DELAY_MS = 1000;
+/** How often the TV writes that it is alive, to measure the time lost by a reload. */
+const ALIVE_SAVE_MS = 1000;
 
 /** Until the master starts a game, no word list is loaded: the reducer refuses to start. */
 const NO_WORDS: WordSource = { length: DEFAULT_WORD_LENGTH, secrets: [], isValid: () => false };
@@ -74,6 +80,12 @@ function wait(ms: number): Promise<void> {
 
 function controllerUrl(code: string): string {
   return `${window.location.origin}${window.location.pathname}?mode=manette&code=${code}`;
+}
+
+/** The mode, the master and the teams survive a reload; links do not. */
+function initialRoom(): Room {
+  const saved = loadRoom();
+  return saved === null ? EMPTY_ROOM : { ...saved, links: [] };
 }
 
 function initialRoomCode(): string {
@@ -124,17 +136,19 @@ function markSound(sound: Sound | null, mark: LetterMark): void {
 }
 
 export function startTv(root: HTMLElement): void {
-  const sound = createSound();
+  const sound = isMuted(window.location.search) ? null : createSound();
   const setup = createSetupScreen();
   const game = createGameScreen();
   const final = createRankingScreen();
   const corner = createElement('div', { className: 'corner' });
 
-  const warnings = { offline: '', room: '', controller: '', words: '' };
-  let state: GameState = INITIAL_STATE;
+  const warnings = { offline: '', room: '', controller: '', words: '', game: '', teams: '' };
+  const saved = loadGame();
+  if (saved.kind === 'unreadable') warnings.game = TV_TEXTS.saveUnreadable;
+  let state: GameState = saved.kind === 'loaded' ? saved.state : INITIAL_STATE;
   let words: WordSource = NO_WORDS;
   let code = initialRoomCode();
-  let room: Room = EMPTY_ROOM;
+  let room: Room = initialRoom();
   let connection: ConnectionStatus = { kind: 'waiting' };
   let presentation: Promise<void> = Promise.resolve();
   /** Presentations queued or playing: the phones wait while the TV is busy. */
@@ -142,6 +156,9 @@ export function startTv(root: HTMLElement): void {
   let loadingWords = false;
   let timeUpSentFor: GameState | null = null;
   let lastTickSecond = -1;
+  let lastAliveSave = 0;
+  /** False until a game saved before a reload is ready again (word lists loaded, clock shifted). */
+  let resumed = false;
 
   const deps = (): GameDeps => ({ random: Math.random, now: () => Date.now(), words });
 
@@ -302,6 +319,7 @@ export function startTv(root: HTMLElement): void {
       return;
     }
     state = result.state;
+    warnings.game = saveGame(state) ? '' : TV_TEXTS.saveFailed;
     updateCorner();
     if (result.events.length > 0) queuePresentation(before, result);
     else render(viewOf(state));
@@ -340,6 +358,7 @@ export function startTv(root: HTMLElement): void {
   function updateRoom(next: Room, close: readonly LinkId[] = []): void {
     room = next;
     for (const link of close) dismiss(link);
+    warnings.teams = saveRoom(room) ? '' : TV_TEXTS.saveFailed;
     updateCorner();
     setup.showLobby(room.mode, seatsView(room));
     if (state.phase !== 'setup' && state.phase !== 'gameOver' && queued === 0)
@@ -363,7 +382,7 @@ export function startTv(root: HTMLElement): void {
 
   function receiveAction(action: GameAction, link: LinkId): void {
     // A refused phone still gets an answer, so that it stops waiting.
-    if (queued > 0 || !mayAct(room, state, link, action)) {
+    if (!resumed || queued > 0 || !mayAct(room, state, link, action)) {
       sendView([], [link]);
       return;
     }
@@ -397,7 +416,13 @@ export function startTv(root: HTMLElement): void {
 
   /** Countdown on screen, ticks for the last seconds, and the end of the time for the reducer. */
   function refreshTimer(): void {
-    const view = toPublicView(state, { events: [], busy: false, now: Date.now() }).game;
+    if (!resumed) return;
+    const now = Date.now();
+    const view = toPublicView(state, { events: [], busy: false, now }).game;
+    if (isInGame(view) && now - lastAliveSave >= ALIVE_SAVE_MS) {
+      lastAliveSave = now;
+      saveAliveAt(now);
+    }
     const timer = isInGame(view) ? view.timer : null;
     if (timer === null) {
       game.showTimer(null, false);
@@ -462,4 +487,34 @@ export function startTv(root: HTMLElement): void {
   render(viewOf(state));
   setInterval(refreshTimer, TIMER_REFRESH_MS);
   setup.soundButton.focus();
+  resume();
+
+  /**
+   * After a reload in the middle of a game: load its word lists, give back the
+   * time the TV was gone, and finish an animation that was cut short.
+   */
+  function resume(): void {
+    if (state.phase === 'setup' || state.phase === 'gameOver') {
+      resumed = true;
+      return;
+    }
+    const length = state.settings.wordLength;
+    warnings.words = TV_TEXTS.loadingWords;
+    updateCorner();
+    loadWordSource(length)
+      .then((source) => {
+        words = source;
+        warnings.words = '';
+        resumed = true;
+        const aliveAt = loadAliveAt();
+        if (aliveAt !== null) dispatch({ type: 'resumeClock', pausedMs: Date.now() - aliveAt });
+        game.showMessage(TV_TEXTS.gameResumed);
+        if (waitsForReveal(state)) dispatch({ type: 'revealDone' });
+        else sendView([]);
+      })
+      .catch(() => {
+        warnings.words = TV_TEXTS.loadingFailed;
+      })
+      .finally(updateCorner);
+  }
 }

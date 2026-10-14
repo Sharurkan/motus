@@ -27,7 +27,7 @@ export const ballSchema = z.discriminatedUnion('kind', [
 ]);
 
 /** Actions a phone may send. Timing (end of an animation, timeout) only comes from the TV. */
-export type PhoneAction = Exclude<GameAction, { type: 'revealDone' | 'timeUp' }>;
+export type PhoneAction = Exclude<GameAction, { type: 'revealDone' | 'timeUp' | 'resumeClock' }>;
 
 export const phoneActionSchema: z.ZodMiniType<PhoneAction> = z.discriminatedUnion('type', [
   z.object({

@@ -143,6 +143,8 @@ export type GameAction =
   /** TV only: the animation is over. */
   | { type: 'revealDone' }
   /** TV only: a timer ran out. The reducer checks it with the clock. */
-  | { type: 'timeUp' };
+  | { type: 'timeUp' }
+  /** TV only, after a reload: the time the TV was gone does not count. */
+  | { type: 'resumeClock'; pausedMs: number };
 
 export const INITIAL_STATE: GameState = { phase: 'setup' };
