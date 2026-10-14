@@ -128,7 +128,7 @@ export type GameAction =
       attemptSeconds: AttemptSeconds;
       wordCount: WordCount;
       /** Test mode: skip the first part, the first team plays the Super partie. */
-      startAtSuperPartie?: boolean;
+      startAtSuperPartie?: boolean | undefined;
     }
   | { type: 'proposeWord'; word: string }
   | { type: 'drawBall' }
