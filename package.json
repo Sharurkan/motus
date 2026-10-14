@@ -4,21 +4,23 @@
   "version": "0.0.0",
   "type": "module",
   "engines": {
-    "node": ">=22.12.0"
+    "node": ">=22.18.0"
   },
   "scripts": {
     "dev": "vite --host",
     "build": "vite build",
     "preview": "vite preview --host",
-    "typecheck": "tsc --noEmit",
+    "typecheck": "tsc --noEmit && tsc --noEmit -p tools",
     "lint": "eslint .",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "test": "vitest run",
-    "check": "npm run typecheck && npm run lint && npm test"
+    "check": "npm run typecheck && npm run lint && npm test",
+    "words": "node tools/build-words.ts"
   },
   "devDependencies": {
     "@eslint/js": "10.0.1",
+    "@types/node": "24.19.2",
     "eslint": "10.12.0",
     "eslint-config-prettier": "10.1.8",
     "prettier": "3.9.9",
