@@ -20,6 +20,11 @@
   box-sizing: border-box;
 }
 
+/* Elements styled with display: flex or grid must still disappear when hidden. */
+[hidden] {
+  display: none !important;
+}
+
 body {
   margin: 0;
   background: var(--bg);

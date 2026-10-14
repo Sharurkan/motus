@@ -1,6 +1,6 @@
 interface Tone {
   frequency: number;
-  /** Slides to this frequency over the tone, for "wah" effects. */
+  /** Slides to this frequency over the tone. */
   endFrequency?: number;
   duration: number;
   type?: OscillatorType;
@@ -13,20 +13,25 @@ const MASTER_VOLUME = 0.7;
 const DEFAULT_VOLUME = 0.3;
 const SILENT = 0.0001;
 
+/** Original sounds made with Web Audio: no audio file, nothing from the show. */
 export interface Sound {
   /** Must be called from a user gesture (remote OK button), or browsers keep audio muted. */
   unlock(): Promise<boolean>;
   isUnlocked(): boolean;
   beep(): void;
   tick(): void;
-  reveal(): void;
+  /** One letter of a line: red, yellow or absent. */
+  placed(): void;
+  misplaced(): void;
   absent(): void;
-  bankrupt(): void;
-  win(): void;
-  roundStart(): void;
-  /** Light pop for a toss-up letter. */
+  /** A letter shown at the start of a word or as a bonus. */
   pop(): void;
-  buzz(): void;
+  refused(): void;
+  found(): void;
+  ballDrop(): void;
+  blackBall(): void;
+  motus(): void;
+  start(): void;
 }
 
 /** Returns null when Web Audio is not available. */
@@ -74,6 +79,10 @@ export function createSound(): Sound | null {
     source.stop(start + 0.03);
   }
 
+  function chord(frequencies: readonly number[], options: Omit<Tone, 'frequency'>): void {
+    for (const frequency of frequencies) play({ ...options, frequency });
+  }
+
   const beep = (): void => {
     play({ frequency: 880, duration: 0.15 });
   };
@@ -91,17 +100,37 @@ export function createSound(): Sound | null {
     isUnlocked: () => context.state === 'running',
     beep,
     tick: click,
-    reveal: () => {
-      // A bell: a note and its octave, fading slowly.
-      play({ frequency: 1320, duration: 0.6, volume: 0.25 });
-      play({ frequency: 2640, duration: 0.4, volume: 0.1 });
+    placed: () => {
+      // Bright and firm: a well placed letter.
+      play({ frequency: 784, duration: 0.18, type: 'square', volume: 0.12 });
+      play({ frequency: 1568, duration: 0.12, volume: 0.1 });
+    },
+    misplaced: () => {
+      // Softer and rounder: present but elsewhere.
+      play({ frequency: 523, duration: 0.2, type: 'triangle', volume: 0.25 });
     },
     absent: () => {
+      play({ frequency: 196, duration: 0.12, type: 'triangle', volume: 0.12 });
+    },
+    pop: () => {
+      play({ frequency: 990, duration: 0.15, type: 'triangle', volume: 0.18 });
+    },
+    refused: () => {
       // Two close low notes beat against each other, like a buzzer.
       play({ frequency: 110, duration: 0.6, type: 'square', volume: 0.12 });
       play({ frequency: 116, duration: 0.6, type: 'square', volume: 0.12 });
     },
-    bankrupt: () => {
+    found: () => {
+      [523, 659, 784].forEach((frequency, index) => {
+        play({ frequency, duration: 0.2, type: 'triangle', delay: index * 0.13 });
+      });
+      chord([523, 659, 784, 1047], { duration: 0.9, type: 'triangle', volume: 0.15, delay: 0.42 });
+    },
+    ballDrop: () => {
+      play({ frequency: 660, endFrequency: 330, duration: 0.25, type: 'triangle', volume: 0.25 });
+      play({ frequency: 1320, duration: 0.4, volume: 0.12, delay: 0.25 });
+    },
+    blackBall: () => {
       [0, 0.45, 0.9].forEach((delay, index) => {
         const from = 330 - index * 60;
         play({
@@ -114,23 +143,13 @@ export function createSound(): Sound | null {
         });
       });
     },
-    win: () => {
-      [523, 659, 784].forEach((frequency, index) => {
-        play({ frequency, duration: 0.2, type: 'triangle', delay: index * 0.13 });
+    motus: () => {
+      [392, 523, 659, 784, 1047].forEach((frequency, index) => {
+        play({ frequency, duration: 0.18, type: 'square', volume: 0.12, delay: index * 0.1 });
       });
-      [523, 659, 784, 1047].forEach((frequency) => {
-        play({ frequency, duration: 0.9, type: 'triangle', volume: 0.15, delay: 0.42 });
-      });
+      chord([523, 659, 784, 1047], { duration: 1.2, type: 'triangle', volume: 0.15, delay: 0.55 });
     },
-    pop: () => {
-      play({ frequency: 990, duration: 0.15, type: 'triangle', volume: 0.18 });
-    },
-    buzz: () => {
-      [0, 0.16].forEach((delay) => {
-        play({ frequency: 740, duration: 0.12, type: 'square', volume: 0.12, delay });
-      });
-    },
-    roundStart: () => {
+    start: () => {
       [392, 523, 659].forEach((frequency, index) => {
         play({ frequency, duration: 0.25, type: 'triangle', volume: 0.2, delay: index * 0.12 });
       });
