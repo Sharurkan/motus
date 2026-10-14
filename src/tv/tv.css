@@ -29,8 +29,8 @@
   margin: 0;
   font-size: 10vh;
   letter-spacing: 0.15em;
-  color: var(--misplaced);
-  text-shadow: 0 0.6vh 0 var(--well-placed);
+  color: var(--accent);
+  text-shadow: 0 0.6vh 0 var(--accent-shadow);
 }
 
 /* Setup */
@@ -73,7 +73,7 @@
 .setup-url {
   font-size: 2.6vh;
   word-break: break-all;
-  color: var(--misplaced);
+  color: var(--accent);
 }
 
 .connection {
@@ -116,14 +116,14 @@
 .sound-button {
   padding: 1.5vh 3vw;
   font-size: 3.5vh;
-  border: 0.5vh solid var(--misplaced);
+  border: 0.5vh solid var(--accent);
   border-radius: 1vh;
   background: transparent;
   color: var(--fg);
 }
 
 .sound-button:focus {
-  background: var(--cell-blue);
+  background: var(--cell);
   outline: none;
 }
 
@@ -163,7 +163,7 @@
   font-size: 6vh;
   text-align: center;
   font-variant-numeric: tabular-nums;
-  background: var(--cell-blue);
+  background: var(--cell);
 }
 
 .timer.urgent {
@@ -190,7 +190,7 @@
   width: var(--cell);
   height: var(--cell);
   font-size: calc(var(--cell) * 0.62);
-  background: var(--cell-blue);
+  background: var(--cell);
   color: var(--fg);
 }
 
@@ -203,7 +203,7 @@
   background: var(--well-placed);
 }
 
-/* Misplaced: a yellow circle inside the blue cell. */
+/* Misplaced: a yellow circle inside the green cell. */
 .cell.misplaced::before {
   content: '';
   position: absolute;
@@ -213,11 +213,11 @@
 }
 
 .cell.misplaced .letter {
-  color: #102a6b;
+  color: var(--ink);
 }
 
 .cell.empty {
-  background: #15357e;
+  background: var(--cell-empty);
 }
 
 .cell.unknown {
@@ -233,7 +233,7 @@
 }
 
 .refused-row .cell {
-  background: #2a3a66;
+  background: var(--cell-refused);
   color: var(--muted);
   text-decoration: line-through;
 }
@@ -250,7 +250,7 @@
   margin-top: 2vh;
   font-size: 4.5vh;
   text-align: center;
-  color: var(--misplaced);
+  color: var(--accent);
 }
 
 .banner.show {
@@ -321,13 +321,13 @@
   height: var(--bingo);
   border-radius: 0.6vh;
   font-size: calc(var(--bingo) * 0.48);
-  background: #f4f6fb;
-  color: #102a6b;
+  background: var(--paper);
+  color: var(--ink);
 }
 
 .bingo-cell.covered {
   background: var(--team);
-  color: #102a6b;
+  color: var(--ink);
   box-shadow: inset 0 0 0 0.4vh rgba(0, 0, 0, 0.25);
 }
 
@@ -365,7 +365,7 @@
   height: 32vh;
   border-radius: 50%;
   font-size: 15vh;
-  color: #102a6b;
+  color: var(--ink);
   background: radial-gradient(circle at 35% 30%, #ffffff, #ffe36b 55%, #d9a400);
   box-shadow: 0 2vh 6vh rgba(0, 0, 0, 0.6);
   animation: ball 1.8s ease-in-out forwards;

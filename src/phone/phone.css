@@ -13,8 +13,8 @@
   margin: 24px 0;
   font-size: 44px;
   letter-spacing: 0.15em;
-  color: var(--misplaced);
-  text-shadow: 0 3px 0 var(--well-placed);
+  color: var(--accent);
+  text-shadow: 0 3px 0 var(--accent-shadow);
   text-align: center;
 }
 
@@ -54,7 +54,7 @@
   font-weight: bold;
   text-align: center;
   font-variant-numeric: tabular-nums;
-  background: var(--cell-blue);
+  background: var(--cell);
 }
 
 .countdown.urgent {
@@ -64,7 +64,7 @@
 .turn {
   font-size: 18px;
   font-weight: bold;
-  color: var(--misplaced);
+  color: var(--accent);
 }
 
 .scores,
@@ -143,7 +143,7 @@
 
 .choice.selected {
   background: var(--trim-main);
-  border-color: var(--misplaced);
+  border-color: var(--accent);
 }
 
 .secondary-button {
@@ -183,7 +183,7 @@
   aspect-ratio: 1;
   font-size: 26px;
   font-weight: bold;
-  background: var(--cell-blue);
+  background: var(--cell);
   color: var(--fg);
 }
 
@@ -216,8 +216,8 @@
   border-radius: 8px;
   font-size: 22px;
   font-weight: bold;
-  background: #e8edf8;
-  color: #102a6b;
+  background: var(--paper);
+  color: var(--ink);
 }
 
 .word-actions {

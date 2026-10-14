@@ -1,17 +1,25 @@
 :root {
-  --bg: #0b1e4a;
-  --fg: #ffffff;
-  --muted: #b9c4dc;
-  --ok: #4ade80;
+  /* Abyss green theme. */
+  --bg: #03201c;
+  --fg: #f2fbf8;
+  --muted: #9cc4bb;
+  --ok: #5ef0a8;
   --error: #ff6b6b;
-  /* Motus palette: blue cells, red for well placed, yellow for misplaced. */
-  --cell-blue: #1d4fb8;
+  /* Motus palette: deep green cells, red for well placed, yellow for misplaced. */
+  --cell: #0a5a4e;
+  --cell-empty: #063a33;
+  --cell-refused: #22403b;
+  --ink: #032822;
+  --paper: #eef8f5;
   --well-placed: #e3262f;
   --misplaced: #ffd21f;
-  --trim-light: #6fa8ff;
-  --trim-main: #1d4fb8;
-  --accent: var(--misplaced);
-  --font-game: system-ui, sans-serif;
+  --trim-light: #4fd1b5;
+  --trim-main: #0a5a4e;
+  --accent: #8ff0d8;
+  --accent-shadow: #01110e;
+  --font-game:
+    'Nunito', 'Avenir Next', 'Segoe UI Rounded', 'Segoe UI', 'Roboto', 'Helvetica Neue', system-ui,
+    sans-serif;
   font-family: var(--font-game);
   color: var(--fg);
   background: var(--bg);
