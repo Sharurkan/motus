@@ -28,6 +28,7 @@ licence [Creative Commons BY-SA 4.0](https://creativecommons.org/licenses/by-sa/
 Ces listes sont des données dérivées, partagées sous la même licence.
 
 Mots exclus des mots à deviner (grossiers, blessants, tristes) : `tools/secret-blocklist.txt`.
+Mots récents absents de Lexique mais acceptés (SMARTPHONE, SELFIE…) : `tools/extra-valid-words.txt`.
 
 Référence :
 

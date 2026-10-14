@@ -65,7 +65,7 @@ Principes :
 
 - Générées par `tools/` à partir de Lexique 3.83, enregistrées dans `src/game/words/`. Le build n'a pas besoin du réseau.
 - Une chaîne triée par longueur, recherche par dichotomie. Seule la longueur de la partie est chargée.
-- Ne jamais modifier à la main : corriger le script (ou ses listes d'exclusion) et régénérer.
+- Ne jamais modifier à la main : corriger le script, `tools/secret-blocklist.txt` (mots exclus des mots secrets) ou `tools/extra-valid-words.txt` (mots récents acceptés), puis régénérer.
 - Le dictionnaire vit seulement sur la TV.
 
 ## Règles de code

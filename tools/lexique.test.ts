@@ -3,7 +3,7 @@ import {
   acceptedWords,
   isAcceptedForm,
   isBaseForm,
-  parseBlocklist,
+  parseWordFile,
   parseLexique,
   secretWords,
   type LexiqueRow,
@@ -119,6 +119,15 @@ describe('acceptedWords', () => {
     expect(words.get(7)).toEqual(['COUVENT']);
   });
 
+  it('adds the extra words, merged with Lexique words', () => {
+    const words = acceptedWords(rows, LENGTHS, new Set(['SELFIE', 'ECOLES']));
+    expect(words.get(6)).toEqual(['COEURS', 'ECOLES', 'SELFIE']);
+  });
+
+  it.each(['SMARTPHONE', 'HASH-TAG'])('refuses the extra word %s that does not fit', (word) => {
+    expect(() => acceptedWords(rows, LENGTHS, new Set([word]))).toThrow(word);
+  });
+
   it('keeps an empty list for a length without words', () => {
     expect(acceptedWords([], LENGTHS).get(6)).toEqual([]);
   });
@@ -140,9 +149,9 @@ describe('secretWords', () => {
   });
 });
 
-describe('parseBlocklist', () => {
+describe('parseWordFile', () => {
   it('normalizes words and skips comments and empty lines', () => {
     const text = '# Rude\r\nputain\n\n  enculé  \n# end\n';
-    expect(parseBlocklist(text)).toEqual(new Set(['PUTAIN', 'ENCULE']));
+    expect(parseWordFile(text)).toEqual(new Set(['PUTAIN', 'ENCULE']));
   });
 });

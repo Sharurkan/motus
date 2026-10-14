@@ -76,12 +76,20 @@ describe.each(WORD_LENGTHS)('word lists of %i letters', (length) => {
 });
 
 describe('valid words', () => {
-  it.each(['PARLER', 'PARLANT', 'PARLEE', 'PARLEES', 'CHEVAUX', 'BLEUES', 'COUVENT', 'MAISON'])(
-    'accept %s',
-    (word) => {
-      expect(isValid(word)).toBe(true);
-    },
-  );
+  it.each([
+    'PARLER',
+    'PARLANT',
+    'PARLEE',
+    'PARLEES',
+    'CHEVAUX',
+    'BLEUES',
+    'COUVENT',
+    'MAISON',
+    'SELFIE',
+    'SMARTPHONE',
+  ])('accept %s', (word) => {
+    expect(isValid(word)).toBe(true);
+  });
 
   it.each(['PARLENT', 'MANGEONS', 'MANGEAIT', 'FINIRAIT'])(
     'refuse the conjugated form %s',

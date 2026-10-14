@@ -1,0 +1,73 @@
+# Words accepted as proposals although Lexique 3.83 (about 2005) does not have them.
+# One per line, accents allowed, 6 to 10 letters after normalization.
+# Never used as secret words. Lines starting with "#" are comments.
+
+# Phones and Internet
+applis
+bluetooth
+emails
+emojis
+hashtag
+hashtags
+internaute
+playlist
+playlists
+podcast
+podcasts
+selfie
+selfies
+smartphone
+streaming
+textos
+tutoriel
+tutoriels
+webcam
+webcams
+
+# People
+blogueur
+blogueurs
+blogueuse
+blogueuses
+youtubeur
+youtubeurs
+youtubeuse
+vapoteur
+vapoteurs
+vapoteuse
+
+# Verbs (infinitive and participles)
+bloguer
+blogué
+bloguée
+blogués
+bloguant
+spoiler
+spoilé
+spoilée
+spoilés
+spoilant
+spoilers
+textoter
+textoté
+textotée
+textotés
+textotant
+tweeter
+tweeté
+tweetée
+tweetés
+tweetant
+tweets
+vapoter
+vapoté
+vapotant
+
+# Other recent words
+coworking
+drones
+hoverboard
+startup
+startups
+sudokus
+visios

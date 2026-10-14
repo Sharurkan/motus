@@ -2,12 +2,13 @@
 // The Lexique file is downloaded once into tools/.cache/, which git ignores.
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { WORD_LENGTHS } from '../src/game/config.ts';
-import { acceptedWords, parseBlocklist, parseLexique, secretWords } from './lexique.ts';
+import { acceptedWords, parseLexique, parseWordFile, secretWords } from './lexique.ts';
 
 const LEXIQUE_URL = 'http://www.lexique.org/databases/Lexique383/Lexique383.tsv';
 const CACHE_DIR = new URL('.cache/', import.meta.url);
 const LEXIQUE_FILE = new URL('Lexique383.tsv', CACHE_DIR);
 const BLOCKLIST_FILE = new URL('secret-blocklist.txt', import.meta.url);
+const EXTRA_WORDS_FILE = new URL('extra-valid-words.txt', import.meta.url);
 const WORDS_DIR = new URL('../src/game/words/', import.meta.url);
 /** Most frequent base forms kept per length: the spec asks for at least 400. */
 const SECRET_WORDS_PER_LENGTH = 600;
@@ -40,8 +41,9 @@ function writeSecretWords(length: number, words: readonly string[]): void {
 
 async function main(): Promise<void> {
   const rows = parseLexique(await readLexique());
-  const blocklist = parseBlocklist(readFileSync(BLOCKLIST_FILE, 'utf8'));
-  const valid = acceptedWords(rows, WORD_LENGTHS);
+  const blocklist = parseWordFile(readFileSync(BLOCKLIST_FILE, 'utf8'));
+  const extras = parseWordFile(readFileSync(EXTRA_WORDS_FILE, 'utf8'));
+  const valid = acceptedWords(rows, WORD_LENGTHS, extras);
   const secret = secretWords(rows, WORD_LENGTHS, blocklist, SECRET_WORDS_PER_LENGTH);
   for (const length of WORD_LENGTHS) {
     const validWords = valid.get(length) ?? [];

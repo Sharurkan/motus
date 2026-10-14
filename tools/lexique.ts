@@ -81,18 +81,29 @@ export function frequency(row: LexiqueRow): number {
   return (row.freqLemFilms + row.freqLemBooks) / 2;
 }
 
+function fitsGame(word: string, lengths: readonly number[]): boolean {
+  return isPlainWord(word) && lengths.includes(word.length);
+}
+
 /** Normalized word if it fits the game (letters A to Z, allowed length), else null. */
 function gameWord(row: LexiqueRow, lengths: readonly number[]): string | null {
   const word = normalizeText(row.ortho);
-  return isPlainWord(word) && lengths.includes(word.length) ? word : null;
+  return fitsGame(word, lengths) ? word : null;
 }
 
-/** Accepted words of each length, sorted, without duplicates. */
+/**
+ * Accepted words of each length, sorted, without duplicates. `extras` adds
+ * words missing from Lexique (recent words); each one must fit the game.
+ */
 export function acceptedWords(
   rows: readonly LexiqueRow[],
   lengths: readonly number[],
+  extras: ReadonlySet<string> = new Set(),
 ): Map<number, string[]> {
-  const words = new Set<string>();
+  const unfit = [...extras].filter((word) => !fitsGame(word, lengths));
+  if (unfit.length > 0)
+    throw new Error(`Extra words that do not fit the game: ${unfit.join(', ')}`);
+  const words = new Set<string>(extras);
   for (const row of rows) {
     const word = gameWord(row, lengths);
     if (word !== null && isAcceptedForm(row)) words.add(word);
@@ -132,7 +143,7 @@ function byLength(sorted: readonly string[], lengths: readonly number[]): Map<nu
 }
 
 /** One word per line; empty lines and lines starting with "#" are ignored. */
-export function parseBlocklist(text: string): Set<string> {
+export function parseWordFile(text: string): Set<string> {
   const words = text
     .split(/\r?\n/)
     .map((line) => line.trim())
