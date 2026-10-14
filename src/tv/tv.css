@@ -467,3 +467,53 @@
     opacity: 0;
   }
 }
+
+/* Known letters waiting to appear at the start of a word. */
+.cell.pending .letter {
+  visibility: hidden;
+}
+
+.team-panel.out {
+  opacity: 0.35;
+}
+
+/* Super partie: the counter and the words already played. */
+.super-panel {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.5vh;
+  padding: 2vh 1vw;
+  border: 0.5vh solid var(--team);
+  border-radius: 1.2vh;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.super-panel .team-name {
+  font-size: 4vh;
+  color: var(--team);
+}
+
+.super-count {
+  font-size: 14vh;
+  line-height: 1;
+}
+
+.super-results {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.8vh 2vw;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: 2.8vh;
+}
+
+.super-results .found {
+  color: var(--ok);
+}
+
+.super-results .missed {
+  color: var(--muted);
+  text-decoration: line-through;
+}

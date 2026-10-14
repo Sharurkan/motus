@@ -32,6 +32,8 @@ export interface Sound {
   blackBall(): void;
   motus(): void;
   start(): void;
+  /** A longer original jingle for the final. */
+  superStart(): void;
 }
 
 /** Returns null when Web Audio is not available. */
@@ -74,7 +76,7 @@ export function createSound(): Sound | null {
     source.buffer = noise;
     filter.type = 'bandpass';
     filter.frequency.value = 3000;
-    source.connect(filter).connect(envelope(0.5, start, 0.03));
+    source.connect(filter).connect(envelope(0.3, start, 0.03));
     source.start(start);
     source.stop(start + 0.03);
   }
@@ -153,6 +155,13 @@ export function createSound(): Sound | null {
       [392, 523, 659].forEach((frequency, index) => {
         play({ frequency, duration: 0.25, type: 'triangle', volume: 0.2, delay: index * 0.12 });
       });
+    },
+    superStart: () => {
+      // Rising arpeggio, then a held major chord.
+      [262, 330, 392, 523, 659, 784].forEach((frequency, index) => {
+        play({ frequency, duration: 0.22, type: 'triangle', volume: 0.2, delay: index * 0.11 });
+      });
+      chord([523, 659, 784, 1047], { duration: 1.4, type: 'triangle', volume: 0.14, delay: 0.7 });
     },
   };
 }

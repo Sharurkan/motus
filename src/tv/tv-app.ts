@@ -110,6 +110,14 @@ function writtenLine(events: readonly GameEvent[]): Line | null {
   return null;
 }
 
+function isWordStart(event: GameEvent): boolean {
+  return (
+    event.type === 'wordStarted' ||
+    event.type === 'tieBreakWordStarted' ||
+    event.type === 'superWordStarted'
+  );
+}
+
 /** The TV animates until the step needs the end of the animation to go on. */
 function waitsForReveal(state: GameState): boolean {
   if (state.phase === 'playing' || state.phase === 'tieBreak')
@@ -241,8 +249,10 @@ export function startTv(root: HTMLElement): void {
     switch (event.type) {
       case 'wordStarted':
       case 'tieBreakStarted':
-      case 'superPartieStarted':
         sound?.start();
+        return;
+      case 'superPartieStarted':
+        sound?.superStart();
         return;
       case 'wordFound':
       case 'superWordFound':
@@ -261,11 +271,13 @@ export function startTv(root: HTMLElement): void {
     }
   }
 
+  /** The messages of these events; a new word without a message clears the old one. */
   function showBanner(events: readonly GameEvent[]): void {
     const messages = events
       .map((event) => eventMessage(event, teamName))
       .filter((message): message is string => message !== null);
     if (messages.length > 0) game.showMessage(messages.join(' · '));
+    else if (events.some(isWordStart)) game.clearMessage();
   }
 
   async function present(before: PhaseView, result: ReduceResult): Promise<void> {
@@ -279,6 +291,10 @@ export function startTv(root: HTMLElement): void {
     }
     const next = viewOf(result.state);
     render(next);
+    if (events.some(isWordStart)) {
+      const letterMs = next.phase === 'superPartie' ? SUPER_LETTER_MS : LETTER_MS;
+      await game.grid.revealHints(letterMs, () => sound?.pop());
+    }
     const passed = events.find((event) => event.type === 'handPassed');
     if (passed?.type === 'handPassed' && passed.bonusPosition !== null) {
       game.grid.highlightHint(passed.bonusPosition);

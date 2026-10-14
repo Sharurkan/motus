@@ -118,6 +118,7 @@ export interface GameScreen {
   ballLayer: HTMLElement;
   render(view: InGameView, options: GameRenderOptions): void;
   showMessage(text: string): void;
+  clearMessage(): void;
   /** Null hides the timer. `urgent` turns it red for the last seconds. */
   showTimer(text: string | null, urgent: boolean): void;
   panel(team: number): HTMLElement | undefined;
@@ -130,9 +131,27 @@ function restartAnimation(element: HTMLElement, className: string): void {
   element.classList.add(className);
 }
 
-function shownTeams(view: InGameView): number[] {
-  if (view.phase === 'superPartie') return [view.activeTeam];
-  return view.teams.map((_, index) => index);
+type SuperPartieView = Extract<InGameView, { phase: 'superPartie' }>;
+
+/** Super partie: no bingo, but the words found so far and the big counter. */
+function superPanel(view: SuperPartieView): HTMLElement {
+  const team = view.teams[view.activeTeam];
+  return createElement('section', { className: `super-panel team-${String(view.activeTeam)}` }, [
+    createElement('div', { className: 'team-name', text: team?.name ?? '' }),
+    createElement('div', { className: 'super-count', text: TV_TEXTS.superCount(view.found) }),
+    createElement(
+      'ol',
+      { className: 'super-results' },
+      view.results.map((result) =>
+        createElement('li', { className: result.found ? 'found' : 'missed', text: result.word }),
+      ),
+    ),
+  ]);
+}
+
+/** In a tie-break, only the tied teams play: the others are dimmed. */
+function isOut(view: InGameView, team: number): boolean {
+  return view.phase === 'tieBreak' && !view.contenders.includes(team);
 }
 
 export function createGameScreen(): GameScreen {
@@ -160,15 +179,18 @@ export function createGameScreen(): GameScreen {
       lastChance: view.phase === 'playing' && view.lastChance,
     });
     panels.clear();
-    const shown = shownTeams(view);
-    teams.dataset['count'] = String(shown.length);
+    if (view.phase === 'superPartie') {
+      teams.dataset['count'] = '1';
+      teams.replaceChildren(superPanel(view));
+      return;
+    }
+    teams.dataset['count'] = String(view.teams.length);
     teams.replaceChildren(
-      ...shown.map((index) => {
-        const team = view.teams[index];
-        if (team === undefined) return createElement('div');
+      ...view.teams.map((team, index) => {
         const panel = createTeamPanel(team, index, {
           active: index === view.activeTeam,
           offline: options.offline.includes(index),
+          out: isOut(view, index),
         });
         panels.set(index, panel);
         return panel;
@@ -184,6 +206,9 @@ export function createGameScreen(): GameScreen {
     showMessage: (text) => {
       banner.textContent = text;
       restartAnimation(banner, 'show');
+    },
+    clearMessage: () => {
+      banner.textContent = '';
     },
     showTimer: (text, urgent) => {
       timer.hidden = text === null;

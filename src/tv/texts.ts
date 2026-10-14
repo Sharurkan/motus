@@ -31,6 +31,7 @@ export const TV_TEXTS = {
   superPartie: 'Super partie',
   superWordOf: (index: number) => `Mot ${String(index)} sur 10`,
   bonusWord: 'Mot bonus',
+  superCount: (found: number) => `${String(found)} / 10`,
   foundCount: (found: number) => `${String(found)} / 10 trouvés`,
   points: (score: number) => `${String(score)} pts`,
   timeUpCell: 'temps écoulé',

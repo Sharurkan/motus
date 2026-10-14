@@ -5,6 +5,7 @@ import {
   MAX_ATTEMPTS,
   MAX_TEAM_NAME_LENGTH,
   MAX_TEAMS,
+  SUPER_WORD_COUNT,
   WORD_COUNT_CHOICES,
   WORD_LENGTHS,
   type AttemptSeconds,
@@ -33,6 +34,8 @@ const MAX_EVENTS = 20;
 const MAX_LINES = MAX_ATTEMPTS + 1;
 const MAX_WORD_LENGTH = WORD_LENGTHS[WORD_LENGTHS.length - 1] ?? 10;
 const CELLS = GRID_SIZE * GRID_SIZE;
+/** 10 words, plus the bonus word. */
+const MAX_SUPER_WORDS = SUPER_WORD_COUNT + 1;
 
 const index = z.int().check(z.minimum(0));
 const teamIndex = index.check(z.maximum(MAX_TEAMS - 1));
@@ -156,6 +159,7 @@ const phaseViewSchema = z.discriminatedUnion('phase', [
     step: z.enum(['ready', 'guessing', 'bonusChoice']),
     wordIndex: index,
     found: index,
+    results: z.array(z.object({ word, found: z.boolean() })).check(z.maxLength(MAX_SUPER_WORDS)),
   }),
   z.object({
     phase: z.literal('gameOver'),
@@ -277,6 +281,7 @@ function superPartieView(state: SuperPartieState, now: number): PhaseView {
     step: state.step.kind,
     wordIndex: state.wordIndex,
     found: state.found,
+    results: state.results,
   };
 }
 

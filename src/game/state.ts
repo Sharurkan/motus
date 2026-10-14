@@ -89,6 +89,12 @@ export type SuperPartieStep =
   /** 10 words found with time left: play the bonus word or finish. */
   | { kind: 'bonusChoice' };
 
+/** One word of the Super partie, once over: found, or missed (6 lines or skipped). */
+export interface SuperWordResult {
+  word: string;
+  found: boolean;
+}
+
 export type SuperPartieState = Common & {
   phase: 'superPartie';
   finalist: number;
@@ -97,6 +103,8 @@ export type SuperPartieState = Common & {
   word: WordRound;
   /** Words found among the first 10. */
   found: number;
+  /** Every word already played, in order, for the TV. */
+  results: SuperWordResult[];
   /** Null until the first word is shown. */
   startedAt: number | null;
   step: SuperPartieStep;

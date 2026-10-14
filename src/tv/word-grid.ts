@@ -25,6 +25,8 @@ export interface WordGrid {
     letterMs: number,
     onLetter: (mark: LetterMark) => void,
   ): Promise<void>;
+  /** Shows the known letters of the next line one by one (start of a word). */
+  revealHints(letterMs: number, onLetter: () => void): Promise<void>;
   /** Makes a hint cell of the next line blink (bonus letter). */
   highlightHint(position: number): void;
 }
@@ -124,9 +126,19 @@ export function createWordGrid(): WordGrid {
     }
   }
 
+  async function revealHints(letterMs: number, onLetter: () => void): Promise<void> {
+    const cells = [...(hint?.querySelectorAll('.cell.hint') ?? [])];
+    for (const cell of cells) cell.classList.add('pending');
+    for (const cell of cells) {
+      await wait(letterMs);
+      cell.classList.remove('pending');
+      onLetter();
+    }
+  }
+
   function highlightHint(position: number): void {
     hint?.querySelectorAll('.cell')[position]?.classList.add('bonus');
   }
 
-  return { element, render, revealLine, highlightHint };
+  return { element, render, revealLine, revealHints, highlightHint };
 }

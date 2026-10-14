@@ -6,6 +6,7 @@ import {
   MAX_TEAM_NAME_LENGTH,
   MAX_TEAMS,
   MIN_TEAMS,
+  SUPER_WORD_COUNT,
   WORD_COUNT_CHOICES,
   WORD_LENGTHS,
   type AttemptSeconds,
@@ -15,7 +16,7 @@ import { ballSchema } from '../protocol/actions';
 
 const GAME_KEY = 'motus.game';
 /** Bump when the saved shape changes: older saves are then dropped instead of misread. */
-const SAVE_VERSION = 1;
+const SAVE_VERSION = 2;
 
 const CELLS = GRID_SIZE * GRID_SIZE;
 const MAX_WORD_LENGTH = WORD_LENGTHS[WORD_LENGTHS.length - 1] ?? 10;
@@ -144,6 +145,9 @@ const superPartieSchema = z
     finalist: count,
     wordIndex: z.int().check(z.minimum(1)),
     found: count,
+    results: z
+      .array(z.object({ word, found: z.boolean() }))
+      .check(z.maxLength(SUPER_WORD_COUNT + 1)),
     startedAt: z.nullable(time),
     step: z.discriminatedUnion('kind', [
       z.object({ kind: z.literal('ready') }),

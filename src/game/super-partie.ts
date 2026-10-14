@@ -28,6 +28,7 @@ export function startSuperPartie(base: GameBase, finalist: number, deps: GameDep
     wordIndex: 1,
     word: picked.round,
     found: 0,
+    results: [],
     startedAt: null,
     step: { kind: 'ready' },
   };
@@ -74,8 +75,9 @@ export function proposeSuperWord(
   const isBonus = state.wordIndex === BONUS_WORD_INDEX;
   const found = isBonus ? state.found : state.found + 1;
   const foundEvent: GameEvent = { type: 'superWordFound', word: line.word, found };
+  const results = [...state.results, { word: line.word, found: true }];
   if (isBonus) return endSuperPartie(played, 'found', [attempt, foundEvent]);
-  return nextSuperWord({ ...played, found }, [attempt, foundEvent], deps);
+  return nextSuperWord({ ...played, found, results }, [attempt, foundEvent], deps);
 }
 
 /** A refused word costs only the line. After 6 lines, the word is revealed and the next one starts. */
@@ -91,9 +93,11 @@ function missSuperWord(
   deps: GameDeps,
 ): ReduceResult {
   const missed: GameEvent = { type: 'superWordMissed', word: state.word.secret, skipped };
-  if (state.wordIndex === BONUS_WORD_INDEX)
+  if (state.wordIndex === BONUS_WORD_INDEX) {
     return endSuperPartie(state, 'missed', [...events, missed]);
-  return nextSuperWord(state, [...events, missed], deps);
+  }
+  const results = [...state.results, { word: state.word.secret, found: false }];
+  return nextSuperWord({ ...state, results }, [...events, missed], deps);
 }
 
 export function skipSuperWord(state: SuperPartieState, deps: GameDeps): ReduceResult {

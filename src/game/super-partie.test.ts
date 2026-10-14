@@ -176,3 +176,17 @@ describe('Super partie bonus word', () => {
     expect(inPhase(late.state, 'gameOver').result?.bonus).toBe('missed');
   });
 });
+
+describe('Super partie history', () => {
+  it('keeps every word played, found or missed, in order', () => {
+    const game = startedSuperPartie();
+    const first = superPartie(game).word.secret;
+    findCurrentWord(game);
+    const second = superPartie(game).word.secret;
+    game.act({ type: 'skipWord' });
+    expect(superPartie(game).results).toEqual([
+      { word: first, found: true },
+      { word: second, found: false },
+    ]);
+  });
+});

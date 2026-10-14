@@ -82,6 +82,7 @@ Valeurs par défaut et choix possibles dans `game/config.ts`.
 - Sur la ligne vide suivante, les lettres déjà connues comme bien placées sont affichées en indice. Le joueur tape quand même le mot entier.
 - Mot trouvé : il s'affiche tout en rouge, l'équipe gagne 50 points (100 pour le dernier mot), puis tire des boules (voir « Grilles et boules »).
 - Mot non trouvé après 6 essais, mot refusé ou temps écoulé : la main passe (voir « La main passe »).
+- Un mot refusé ou un temps écoulé utilise sa ligne : il compte parmi les 6 essais.
 
 ### Coloriage (algorithme exact)
 
@@ -156,7 +157,7 @@ La main passe quand l'équipe active : rate ses 6 essais, propose un mot refusé
 ### Déroulé d'une partie
 
 - Configuration (maître), 1re partie de N mots, mot décisif si égalité, Super partie, classement.
-- Entre deux mots, la TV montre le mot et les scores. « Mot suivant » sur le téléphone du maître.
+- Entre deux mots, la TV montre le mot et les scores. « Mot suivant » sur le téléphone du maître. Après le dernier mot, « Voir la suite » lance la Super partie, ou le mot décisif en cas d'égalité.
 - « Abandonner la partie » sur le téléphone du maître, à tout moment, avec confirmation : classement direct avec les scores actuels.
 - Rechargement de la TV pendant un chrono : le chrono reprend là où il en était, le temps du rechargement n'est pas compté.
 - Aucun mot n'est répété dans une partie (1re partie, mot décisif et Super partie compris).
@@ -166,6 +167,8 @@ La main passe quand l'équipe active : rate ses 6 essais, propose un mot refusé
 - Source : Lexique 3.83 (lexique.org), base lexicale du français avec catégorie grammaticale, lemme et fréquence. Licence Creative Commons BY-SA 4.0. Crédit dans le README.
 - Un script dans `tools/` produit deux jeux de données dans `src/game/words/`, enregistrés dans le dépôt (le build n'a pas besoin du réseau). Jamais modifiés à la main.
 - Mots acceptés : tous les mots français de 6 à 10 lettres après normalisation, avec pluriels et féminins, infinitifs, participes présents et passés. Sans les autres formes conjuguées, noms propres, abréviations, mots avec tiret, apostrophe ou espace.
+- Mots récents absents de Lexique (SMARTPHONE, SELFIE, PODCAST…) : ajoutés aux mots acceptés par une liste écrite à la main, `tools/extra-valid-words.txt`. Jamais utilisés comme mots secrets.
+- Mots exclus des mots secrets (grossiers, blessants, tristes, noms propres) : `tools/secret-blocklist.txt`.
 - Mots secrets : au moins 400 par longueur (6 à 10), mots courants qu'une famille connaît (seuil de fréquence), formes de base seulement (noms au singulier, adjectifs au masculin singulier, infinitifs). Pas de mots grossiers, blessants ou tristes, pas de noms propres. Chaque mot secret est aussi un mot accepté (testé).
 - Stockage : une chaîne triée par longueur (mots de même longueur collés les uns aux autres), recherche par dichotomie. Pas de gros objets en mémoire.
 - Seule la longueur choisie est chargée, au lancement de la partie.
@@ -176,19 +179,22 @@ Limite connue : Lexique ne contient pas tous les mots rares. Un mot correct mais
 
 ## Écran TV
 
-- Lisible de loin : grandes lettres, forts contrastes, 16:9.
+- Lisible de loin : grandes lettres, forts contrastes, 16:9. Police système (Roboto sur le Fire TV), en gras.
 - Zone principale : la grille du mot (6 lignes), cases façon jeu télé : fond bleu, carré rouge pour une lettre bien placée, rond jaune pour une lettre mal placée.
 - Sur le côté : la grille de loto de chaque équipe (numéros couverts bien visibles), les scores, l'équipe active mise en avant, le chrono.
 - Bandeau de message : mot inconnu, mot déjà proposé, la main passe, lettre bonus, MOTUS !, boule noire, dernier mot…
 - Tirage de boule animé, puis la boule se pose sur la grille.
 - Sons simples générés en Web Audio (pas de fichiers audio) : un son pour une lettre rouge, un pour une jaune, un pour une absente, tic du chrono, MOTUS, boule noire. Sons originaux : ni le générique ni le logo de l'émission.
-- Super partie : chrono global en grand, compteur de mots trouvés.
+- Au début d'un mot, les lettres données apparaissent une par une.
+- Mot décisif : les équipes qui ne jouent pas sont grisées.
+- Super partie : chrono global en grand, compteur de mots trouvés sur 10 et liste des mots déjà joués (trouvés ou ratés), à la place des grilles de loto.
+- `&muet` dans l'adresse de la TV : aucun son.
 
 ## Manette (téléphone)
 
 - Affiche : partie en cours (mot X sur N, ou Super partie), équipe active, scores, message en cours. Avec un téléphone par équipe : « Ton équipe : X ».
 - Configuration (maître) : mode, équipes, longueur des mots, temps par essai, nombre de mots.
-- Saisie du mot : une grande case par lettre, première lettre bloquée, clavier A–Z maison (grosses touches, utilisable d'une main), « Effacer » et « Valider ». « Valider » est grisé tant que le mot n'a pas la bonne longueur.
+- Saisie du mot : une grande case par lettre, première lettre bloquée, lettres connues affichées en transparence, clavier AZERTY maison (grosses touches, utilisable d'une main), « Effacer » et « Valider ». « Valider » est grisé tant que le mot n'a pas la bonne longueur.
 - Compte à rebours visible.
 - Bouton « Tirer une boule » pendant le tirage.
 - Super partie : bouton « Passer ».
@@ -203,7 +209,8 @@ Limite connue : Lexique ne contient pas tous les mots rares. Un mot correct mais
   - `{ v, type: "hello", clientId }` au début de chaque connexion ;
   - `{ v, type: "chooseMode", mode }`, `{ v, type: "joinTeam", name }`, `{ v, type: "removeTeam", team }` avant la partie ;
   - `{ v, type: "action", action }`. Actions (union discriminée) : `startGame` (réglages), `proposeWord`, `drawBall`, `nextWord`, `skipWord`, `playBonusWord`, `finishSuperPartie`, `abandonGame`, `newGame`, et en mode test seulement `forceSecret`, `forceBall`.
-- Actions de la TV seule (jamais acceptées d'un téléphone) : fin du temps d'un essai, fin du chrono de la Super partie.
+- Actions de la TV seule (jamais acceptées d'un téléphone) : `revealDone` (fin d'une animation : le minuteur de l'essai démarre), `timeUp` (fin d'un chrono, vérifiée avec l'horloge), `resumeClock` (après un rechargement, décale les chronos du temps où la TV était absente).
+- La `view` envoie le temps restant d'un chrono, pas une heure : le téléphone décompte avec sa propre horloge.
 - TV → téléphone :
   - `{ v, type: "state", view, room }`. La `view` ne contient jamais le mot secret avant qu'il soit révélé sur la TV. `room` est propre à chaque téléphone : mode, maître ou non, son équipe, équipes inscrites ;
   - `{ v, type: "replaced" }` au téléphone remplacé, avec un seul téléphone.
@@ -214,7 +221,7 @@ Limite connue : Lexique ne contient pas tous les mots rares. Un mot correct mais
 
 ## Pages de test
 
-- `?mode=test-tv` et `?mode=test-manette` : connexion, ping, son, diagnostic, comme dans la Roue de la Fortune.
+- `?mode=test-tv` et `?mode=test-manette` : connexion, ping, son, diagnostic, comme dans la Roue de la Fortune. La page TV mesure aussi le chargement des listes de mots.
 
 ## Hors périmètre (pour l'instant)
 

@@ -88,13 +88,13 @@ describe('game store', () => {
   it('drops a save whose word does not fit the game length', () => {
     const state = inPhase(createTestGame().state, 'playing');
     const broken = { ...state, word: { ...state.word, secret: 'MAISONS' } };
-    storage.setItem('motus.game', JSON.stringify({ v: 1, state: broken }));
+    storage.setItem('motus.game', JSON.stringify({ v: 2, state: broken }));
     expect(loadGame()).toEqual({ kind: 'unreadable' });
   });
 
   it('drops a save whose active team does not exist', () => {
     const state = inPhase(createTestGame().state, 'playing');
-    storage.setItem('motus.game', JSON.stringify({ v: 1, state: { ...state, activeTeam: 3 } }));
+    storage.setItem('motus.game', JSON.stringify({ v: 2, state: { ...state, activeTeam: 3 } }));
     expect(loadGame()).toEqual({ kind: 'unreadable' });
   });
 

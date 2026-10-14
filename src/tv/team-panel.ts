@@ -8,6 +8,8 @@ type TeamView = Extract<PhaseView, { word: unknown }>['teams'][number];
 export interface TeamPanelOptions {
   active: boolean;
   offline: boolean;
+  /** Not playing this tie-break. */
+  out: boolean;
 }
 
 /** Name, score and bingo grid of one team. Team colors come from the index (team-0 to team-3). */
@@ -28,6 +30,7 @@ export function createTeamPanel(
   const classes = ['team-panel', `team-${String(index)}`];
   if (options.active) classes.push('active');
   if (options.offline) classes.push('offline');
+  if (options.out) classes.push('out');
   return createElement('section', { className: classes.join(' ') }, [
     createElement('div', { className: 'team-head' }, [
       createElement('span', { className: 'team-name', text: team.name }),
