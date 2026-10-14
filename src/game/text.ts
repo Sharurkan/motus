@@ -13,3 +13,8 @@ export function normalizeText(text: string): string {
 export function isPlainWord(text: string): boolean {
   return /^[A-Z]+$/.test(text);
 }
+
+/** The letters of a normalized word (A to Z only, so one character per letter). */
+export function lettersOf(word: string): string[] {
+  return Array.from({ length: word.length }, (_, i) => word.charAt(i));
+}
